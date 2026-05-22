@@ -58,9 +58,15 @@ $telefono = $this->formatearTelefono($request->telefono);
                 ]);
             });
 
-            return redirect()
-                ->route('proveedores.index')
-                ->with('success', 'Proveedor registrado correctamente.');
+if ($request->volver == 'producto') {
+    return redirect()
+        ->route('inventario.create')
+        ->with('success', 'Proveedor registrado correctamente. Ahora puede seleccionar el nuevo proveedor.');
+}
+
+return redirect()
+    ->route('proveedores.index')
+    ->with('success', 'Proveedor registrado correctamente.');
 
         } catch (\Exception $e) {
             return back()

@@ -37,7 +37,7 @@
                     name="correo"
                     value="{{ old('correo') }}"
                     class="w-full border rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-gray-900"
-                    placeholder="Ingrese su correo electrónicodale"
+                    placeholder="Ingrese su correo electrónico"
                     required
                 >
 

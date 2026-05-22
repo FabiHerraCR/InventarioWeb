@@ -7,17 +7,66 @@ use Illuminate\Support\Facades\DB;
 
 class InventarioController extends Controller
 {
-    public function index()
-    {
-        $productos = DB::select("
-            SELECT *
-            FROM VW_INVENTARIO_GENERAL
-            ORDER BY ID_PRODUCTO
-        ");
+public function index(Request $request)
+{
+    $categorias = DB::select("
+        SELECT ID_CATEGORIA, NOMBRE_CATEGORIA
+        FROM CATEGORIAS
+        WHERE ESTADO = 'A'
+        ORDER BY NOMBRE_CATEGORIA
+    ");
 
-        return view('inventario.index', compact('productos'));
+    $proveedores = DB::select("
+        SELECT ID_PROVEEDOR, NOMBRE_PROVEEDOR
+        FROM PROVEEDORES
+        WHERE ESTADO = 'A'
+        ORDER BY NOMBRE_PROVEEDOR
+    ");
+
+    $sql = "
+        SELECT
+            P.ID_PRODUCTO,
+            P.NOMBRE_PRODUCTO,
+            C.NOMBRE_CATEGORIA,
+            PR.NOMBRE_PROVEEDOR,
+            P.PRECIO_COMPRA,
+            P.PRECIO_VENTA,
+            P.STOCK,
+            P.STOCK_MINIMO,
+            P.ESTADO
+        FROM PRODUCTOS P
+        INNER JOIN CATEGORIAS C ON P.ID_CATEGORIA = C.ID_CATEGORIA
+        INNER JOIN PROVEEDORES PR ON P.ID_PROVEEDOR = PR.ID_PROVEEDOR
+        WHERE 1 = 1
+    ";
+
+    $parametros = [];
+
+    if ($request->filled('id_categoria')) {
+        $sql .= " AND P.ID_CATEGORIA = ?";
+        $parametros[] = $request->id_categoria;
     }
 
+    if ($request->filled('id_proveedor')) {
+        $sql .= " AND P.ID_PROVEEDOR = ?";
+        $parametros[] = $request->id_proveedor;
+    }
+
+    if ($request->filled('estado')) {
+        $sql .= " AND P.ESTADO = ?";
+        $parametros[] = $request->estado;
+    }
+
+    $sql .= " ORDER BY P.ID_PRODUCTO";
+
+    $productos = DB::select($sql, $parametros);
+
+    return view('inventario.index', compact(
+        'productos',
+        'categorias',
+        'proveedores'
+    ));
+}
     public function create()
     {
         $categorias = DB::select("

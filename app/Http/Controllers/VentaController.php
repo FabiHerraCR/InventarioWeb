@@ -8,47 +8,49 @@ use Illuminate\Support\Facades\DB;
 class VentaController extends Controller
 {
     public function index()
-    {
-        $rol = session('usuario.rol');
-        $idUsuario = session('usuario.id_usuario');
+{
+    $rol = session('usuario.rol');
+    $idUsuario = session('usuario.id_usuario');
 
-        if ($rol === 'ADMINISTRADOR') {
-            $ventas = DB::select("
-                SELECT
-                    ID_VENTA,
-                    FECHA_VENTA,
-                    NOMBRE_CLIENTE,
-                    VENDEDOR,
-                    NOMBRE_PRODUCTO,
-                    CANTIDAD,
-                    PRECIO_UNITARIO,
-                    SUBTOTAL,
-                    TOTAL,
-                    ESTADO
-                FROM VW_VENTAS_DETALLE
-                ORDER BY ID_VENTA
-            ");
-        } else {
-            $ventas = DB::select("
-                SELECT
-                    ID_VENTA,
-                    FECHA_VENTA,
-                    NOMBRE_CLIENTE,
-                    VENDEDOR,
-                    NOMBRE_PRODUCTO,
-                    CANTIDAD,
-                    PRECIO_UNITARIO,
-                    SUBTOTAL,
-                    TOTAL,
-                    ESTADO
-                FROM VW_VENTAS_DETALLE
-                WHERE ID_USUARIO = ?
-                ORDER BY ID_VENTA
-            ", [$idUsuario]);
-        }
-
-        return view('ventas.index', compact('ventas'));
+    if ($rol === 'ADMINISTRADOR') {
+        $ventas = DB::select("
+            SELECT
+                ID_VENTA,
+                FECHA_VENTA,
+                NOMBRE_CLIENTE,
+                VENDEDOR,
+                NOMBRE_PRODUCTO,
+                CANTIDAD,
+                PRECIO_UNITARIO,
+                SUBTOTAL,
+                TOTAL,
+                ESTADO
+            FROM VW_VENTAS_DETALLE
+            ORDER BY ID_VENTA DESC
+        ");
+    } else {
+        $ventas = DB::select("
+            SELECT
+                ID_VENTA,
+                FECHA_VENTA,
+                NOMBRE_CLIENTE,
+                VENDEDOR,
+                NOMBRE_PRODUCTO,
+                CANTIDAD,
+                PRECIO_UNITARIO,
+                SUBTOTAL,
+                TOTAL,
+                ESTADO
+            FROM VW_VENTAS_DETALLE
+            WHERE ID_USUARIO = ?
+            ORDER BY ID_VENTA DESC
+        ", [$idUsuario]);
     }
+
+    $ventasAgrupadas = collect($ventas)->groupBy('id_venta');
+
+    return view('ventas.index', compact('ventasAgrupadas'));
+}
 
     public function create()
     {

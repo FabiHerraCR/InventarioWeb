@@ -39,6 +39,13 @@
         Inventario
     </a>
 
+    @if ($rol === 'ADMINISTRADOR')
+    <a href="{{ route('categorias.index') }}"
+       class="block px-4 py-2 rounded hover:bg-gray-700">
+        Categorías
+    </a>
+    @endif
+
     <a href="{{ route('movimientos.index') }}"
    class="block px-4 py-2 rounded hover:bg-gray-700">
     Movimientos

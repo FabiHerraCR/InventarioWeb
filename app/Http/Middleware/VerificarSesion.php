@@ -10,8 +10,7 @@ class VerificarSesion
     public function handle(Request $request, Closure $next)
     {
         if (!session()->has('usuario')) {
-            return redirect()->route('login')
-                ->with('error', 'Debe iniciar sesión para ingresar al sistema.');
+            return redirect()->route('login');
         }
 
         return $next($request);

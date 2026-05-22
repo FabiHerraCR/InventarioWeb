@@ -11,6 +11,7 @@ use App\Http\Controllers\VentaController;
 use App\Http\Controllers\CompraController;
 use App\Http\Controllers\ReporteController;
 use App\Http\Controllers\MovimientoController;
+use App\Http\Controllers\CategoriaController;
 
 
 // RUTAS DE AUTENTICACION
@@ -149,6 +150,25 @@ Route::put('/proveedores/{id}/actualizar', [ProveedorController::class, 'update'
 
 Route::delete('/proveedores/{id}/eliminar', [ProveedorController::class, 'destroy'])
     ->name('proveedores.destroy');
+
+//CATEGORIAS - SOLO PARA ADMINISTRADOR
+Route::get('/categorias', [CategoriaController::class, 'index'])
+    ->name('categorias.index');
+
+Route::get('/categorias/crear', [CategoriaController::class, 'create'])
+    ->name('categorias.create');
+
+Route::post('/categorias/guardar', [CategoriaController::class, 'store'])
+    ->name('categorias.store');
+
+Route::get('/categorias/{id}/editar', [CategoriaController::class, 'edit'])
+    ->name('categorias.edit');
+
+Route::put('/categorias/{id}/actualizar', [CategoriaController::class, 'update'])
+    ->name('categorias.update');
+
+Route::delete('/categorias/{id}/eliminar', [CategoriaController::class, 'destroy'])
+    ->name('categorias.destroy');
 
 });
 

@@ -22,6 +22,66 @@
         </div>
     @endif
 
+    <div class="bg-white p-4 rounded-xl shadow mb-4">
+    <form method="GET" action="{{ route('inventario.index') }}"
+          class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+
+        <div>
+            <label class="block font-semibold mb-2">Categoría</label>
+            <select name="id_categoria" class="w-full border rounded-lg p-2">
+                <option value="">Todas las categorías</option>
+
+                @foreach ($categorias as $categoria)
+                    <option value="{{ $categoria->id_categoria }}"
+                        {{ request('id_categoria') == $categoria->id_categoria ? 'selected' : '' }}>
+                        {{ $categoria->nombre_categoria }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+
+        <div>
+            <label class="block font-semibold mb-2">Proveedor</label>
+            <select name="id_proveedor" class="w-full border rounded-lg p-2">
+                <option value="">Todos los proveedores</option>
+
+                @foreach ($proveedores as $proveedor)
+                    <option value="{{ $proveedor->id_proveedor }}"
+                        {{ request('id_proveedor') == $proveedor->id_proveedor ? 'selected' : '' }}>
+                        {{ $proveedor->nombre_proveedor }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+
+        <div>
+            <label class="block font-semibold mb-2">Estado</label>
+            <select name="estado" class="w-full border rounded-lg p-2">
+                <option value="">Todos</option>
+                <option value="A" {{ request('estado') == 'A' ? 'selected' : '' }}>
+                    Activos
+                </option>
+                <option value="I" {{ request('estado') == 'I' ? 'selected' : '' }}>
+                    Inactivos
+                </option>
+            </select>
+        </div>
+
+        <div class="flex gap-2">
+            <button type="submit"
+                    class="bg-gray-900 text-white px-4 py-2 rounded hover:bg-gray-700">
+                Filtrar
+            </button>
+
+            <a href="{{ route('inventario.index') }}"
+               class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400">
+                Limpiar
+            </a>
+        </div>
+
+    </form>
+</div>
+
     @if ($rol === 'ADMINISTRADOR')
         <div class="mb-4">
             <a href="{{ route('inventario.create') }}"

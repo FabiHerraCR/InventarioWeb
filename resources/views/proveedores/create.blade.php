@@ -16,6 +16,10 @@
         <form action="{{ route('proveedores.store') }}" method="POST" novalidate>
             @csrf
 
+@if (request('volver'))
+    <input type="hidden" name="volver" value="{{ request('volver') }}">
+@endif
+
             <div class="mb-4">
                 <label class="block font-semibold mb-2">Nombre del proveedor</label>
                 <input type="text"
@@ -66,10 +70,17 @@
                     Guardar
                 </button>
 
-                <a href="{{ route('proveedores.index') }}"
-                   class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400">
-                    Cancelar
-                </a>
+@if (request('volver') == 'producto')
+    <a href="{{ route('inventario.create') }}"
+       class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400">
+        Cancelar
+    </a>
+@else
+    <a href="{{ route('proveedores.index') }}"
+       class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400">
+        Cancelar
+    </a>
+@endif
             </div>
         </form>
     </div>
