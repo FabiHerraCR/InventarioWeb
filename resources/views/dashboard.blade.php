@@ -13,7 +13,7 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
         <!-- INVENTARIO -->
-        <div class="bg-white p-6 rounded-xl shadow">
+        <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200">
             <h3 class="text-lg font-bold text-gray-800">Inventario</h3>
             <p class="text-gray-600 mt-2">
                 Consulta productos, stock, categorías y proveedores.
@@ -25,7 +25,7 @@
         </div>
 
         <!-- CLIENTES -->
-        <div class="bg-white p-6 rounded-xl shadow">
+        <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200">
             <h3 class="text-lg font-bold text-gray-800">Clientes</h3>
             <p class="text-gray-600 mt-2">
                 Consulta los clientes registrados en el sistema.
@@ -37,7 +37,7 @@
         </div>
 
         <!-- VENTAS -->
-        <div class="bg-white p-6 rounded-xl shadow">
+        <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200">
             <h3 class="text-lg font-bold text-gray-800">Ventas</h3>
             <p class="text-gray-600 mt-2">
                 Consulta las ventas registradas en el sistema.
@@ -51,7 +51,7 @@
         <!-- SOLO ADMINISTRADOR -->
         @if ($rol === 'ADMINISTRADOR')
 
-            <div class="bg-white p-6 rounded-xl shadow">
+            <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200">
                 <h3 class="text-lg font-bold text-gray-800">Proveedores</h3>
                 <p class="text-gray-600 mt-2">
                     Consulta proveedores registrados para compras e inventario.
@@ -62,7 +62,7 @@
                 </a>
             </div>
 
-            <div class="bg-white p-6 rounded-xl shadow">
+            <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200">
                 <h3 class="text-lg font-bold text-gray-800">Compras</h3>
                 <p class="text-gray-600 mt-2">
                     Consulta las compras registradas a proveedores.
@@ -76,7 +76,7 @@
         @endif
 
         <!-- REPORTES PARA AMBOS ROLES -->
-        <div class="bg-white p-6 rounded-xl shadow">
+        <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200">
             <h3 class="text-lg font-bold text-gray-800">Reportes</h3>
 
             @if ($rol === 'ADMINISTRADOR')

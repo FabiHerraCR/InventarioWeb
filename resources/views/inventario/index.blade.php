@@ -22,7 +22,7 @@
         </div>
     @endif
 
-    <div class="bg-white p-4 rounded-xl shadow mb-4">
+    <div class="bg-white p-4 rounded-xl shadow-md border border-gray-200 mb-4">
     <form method="GET" action="{{ route('inventario.index') }}"
           class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
 
@@ -91,7 +91,7 @@
         </div>
     @endif
 
-    <div class="bg-white shadow rounded-xl overflow-hidden">
+    <div class="bg-white shadow-md border border-gray-200 rounded-xl overflow-hidden">
         <div class="overflow-x-auto">
             <table class="w-full border-collapse">
                 <thead class="bg-gray-900 text-white">

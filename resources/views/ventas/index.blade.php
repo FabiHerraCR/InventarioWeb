@@ -32,7 +32,7 @@
     $fechaVenta = \Carbon\Carbon::parse($venta->fecha_venta)->format('d/m/Y H:i');
 @endphp
 
-        <div class="bg-white shadow rounded-xl overflow-hidden mb-5">
+        <div class="bg-white shadow-md border border-gray-200 rounded-xl overflow-hidden mb-5">
 
             <div class="bg-gray-900 text-white p-4 flex justify-between items-center">
                 <div>

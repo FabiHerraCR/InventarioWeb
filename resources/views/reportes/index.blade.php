@@ -8,22 +8,22 @@
     <!-- TARJETAS RESUMEN -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
 
-        <div class="bg-white p-6 rounded-xl shadow">
+        <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200">
             <h3 class="text-gray-500 text-sm">Productos activos</h3>
             <p class="text-3xl font-bold mt-2">{{ $resumen['total_productos'] }}</p>
         </div>
 
-        <div class="bg-white p-6 rounded-xl shadow">
+        <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200">
             <h3 class="text-gray-500 text-sm">Clientes activos</h3>
             <p class="text-3xl font-bold mt-2">{{ $resumen['total_clientes'] }}</p>
         </div>
 
-        <div class="bg-white p-6 rounded-xl shadow">
+        <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200">
             <h3 class="text-gray-500 text-sm">Ventas registradas</h3>
             <p class="text-3xl font-bold mt-2">{{ $resumen['total_ventas'] }}</p>
         </div>
 
-        <div class="bg-white p-6 rounded-xl shadow">
+        <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200">
             <h3 class="text-gray-500 text-sm">Total vendido</h3>
             <p class="text-3xl font-bold mt-2">
                 ₡{{ number_format($resumen['total_vendido'], 2) }}
@@ -35,7 +35,7 @@
     <!-- GRAFICOS PRINCIPALES -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
 
-        <div class="bg-white p-6 rounded-xl shadow">
+        <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200 mb-3">
             <h3 class="text-xl font-bold mb-2">Productos más vendidos</h3>
             <p class="text-gray-500 text-sm mb-4">
                 Cantidad de unidades vendidas por producto.
@@ -45,7 +45,7 @@
 </div>
         </div>
 
-        <div class="bg-white p-6 rounded-xl shadow">
+        <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200 mb-3">
             <h3 class="text-xl font-bold mb-2">Ventas por día</h3>
             <p class="text-gray-500 text-sm mb-4">
                 Total vendido agrupado por fecha.
@@ -59,7 +59,7 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
 
-        <div class="bg-white p-6 rounded-xl shadow">
+        <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200 mb-4">
             <h3 class="text-xl font-bold mb-2">Stock actual por producto</h3>
             <p class="text-gray-500 text-sm mb-4">
                 Distribución del inventario disponible.
@@ -69,11 +69,11 @@
 </div>
         </div>
 
-        <div class="bg-white p-6 rounded-xl shadow">
+        <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200 mb-4">
             <h3 class="text-xl font-bold mb-4">Productos con stock bajo</h3>
 
             @if (count($stockBajo) > 0)
-                <div class="overflow-x-auto">
+                <div class="max-h-72 overflow-y-auto">
                     <table class="w-full border-collapse">
                         <thead class="bg-gray-900 text-white">
                             <tr>
@@ -106,7 +106,7 @@
     </div>
 
     <!-- TABLA DE VENTAS POR DIA -->
-    <div class="bg-white p-6 rounded-xl shadow mb-8">
+    <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200 mb-4">
         <h3 class="text-xl font-bold mb-4">Detalle de ventas por día</h3>
 
         <div class="overflow-x-auto">

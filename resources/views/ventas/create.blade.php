@@ -12,14 +12,15 @@
         </div>
     @endif
 
-    <div class="bg-white p-6 rounded-xl shadow max-w-3xl">
-        <form action="{{ route('ventas.store') }}" method="POST">
+    <div class="bg-white p-6 rounded-xl shadow max-w-5xl">
+        <form action="{{ route('ventas.store') }}" method="POST" novalidate>
             @csrf
 
             <div class="mb-4">
                 <label class="block font-semibold mb-2">Cliente</label>
                 <select name="id_cliente" class="w-full border rounded-lg p-3" required>
                     <option value="">Seleccione un cliente</option>
+
                     @foreach ($clientes as $cliente)
                         <option value="{{ $cliente->id_cliente }}"
                             {{ old('id_cliente') == $cliente->id_cliente ? 'selected' : '' }}>
@@ -33,37 +34,72 @@
                 @enderror
             </div>
 
-            <div class="mb-4">
-                <label class="block font-semibold mb-2">Producto</label>
-                <select name="id_producto" class="w-full border rounded-lg p-3" required>
-                    <option value="">Seleccione un producto</option>
-                    @foreach ($productos as $producto)
-                        <option value="{{ $producto->id_producto }}"
-                            {{ old('id_producto') == $producto->id_producto ? 'selected' : '' }}>
-                            {{ $producto->nombre_producto }}
-                            - Precio: ₡{{ number_format($producto->precio_venta, 2) }}
-                            - Stock: {{ $producto->stock }}
-                        </option>
-                    @endforeach
-                </select>
+            <h3 class="text-lg font-bold mb-3">Productos de la venta</h3>
 
-                @error('id_producto')
-                    <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
-                @enderror
+            <div id="detalleVenta">
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-3 mb-3 fila-producto">
+                    <div class="md:col-span-7">
+                        <label class="block font-semibold mb-2">Producto</label>
+                        <select name="productos[]"
+                                class="producto-select w-full border rounded-lg p-3"
+                                required>
+                            <option value="" data-precio="0" data-stock="0">
+                                Seleccione un producto
+                            </option>
+
+                            @foreach ($productos as $producto)
+                                <option value="{{ $producto->id_producto }}"
+                                        data-precio="{{ $producto->precio_venta }}"
+                                        data-stock="{{ $producto->stock }}">
+                                    {{ $producto->nombre_producto }}
+                                    - Precio: ₡{{ number_format($producto->precio_venta, 2) }}
+                                    - Stock: {{ $producto->stock }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="md:col-span-3">
+                        <label class="block font-semibold mb-2">Cantidad</label>
+                        <input type="number"
+                               name="cantidades[]"
+                               class="cantidad-input w-full border rounded-lg p-3"
+                               min="1"
+                               value="1"
+                               required>
+                    </div>
+
+                    <div class="md:col-span-2 flex items-end">
+                        <button type="button"
+                                onclick="eliminarFila(this)"
+                                class="bg-red-600 text-white px-3 py-3 rounded hover:bg-red-700 w-full">
+                            Quitar
+                        </button>
+                    </div>
+                </div>
             </div>
 
-            <div class="mb-6">
-                <label class="block font-semibold mb-2">Cantidad</label>
-                <input type="number"
-                       name="cantidad"
-                       value="{{ old('cantidad') }}"
-                       min="1"
-                       class="w-full border rounded-lg p-3"
-                       required>
+            @error('productos')
+                <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+            @enderror
 
-                @error('cantidad')
-                    <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
-                @enderror
+            @error('cantidades')
+                <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+            @enderror
+
+            <div class="mb-4">
+                <button type="button"
+                        onclick="agregarFila()"
+                        class="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-800">
+                    + Agregar producto
+                </button>
+            </div>
+
+            <div class="mb-6 bg-gray-100 p-4 rounded-lg">
+                <p class="font-semibold text-gray-700">Total estimado de la venta</p>
+                <p id="totalVenta" class="text-2xl font-bold text-gray-900">
+                    ₡0.00
+                </p>
             </div>
 
             <div class="flex gap-2">
@@ -79,5 +115,69 @@
             </div>
         </form>
     </div>
+
+    <script>
+        function formatoColones(valor) {
+            return '₡' + valor.toLocaleString('es-CR', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+
+        function calcularTotalVenta() {
+            let total = 0;
+
+            document.querySelectorAll('.fila-producto').forEach(function (fila) {
+                const productoSelect = fila.querySelector('.producto-select');
+                const cantidadInput = fila.querySelector('.cantidad-input');
+
+                const opcion = productoSelect.options[productoSelect.selectedIndex];
+                const precio = parseFloat(opcion.getAttribute('data-precio')) || 0;
+                const cantidad = parseInt(cantidadInput.value) || 0;
+
+                total += precio * cantidad;
+            });
+
+            document.getElementById('totalVenta').textContent = formatoColones(total);
+        }
+
+        function agregarFila() {
+            const contenedor = document.getElementById('detalleVenta');
+            const primeraFila = document.querySelector('.fila-producto');
+            const nuevaFila = primeraFila.cloneNode(true);
+
+            nuevaFila.querySelector('.producto-select').value = '';
+            nuevaFila.querySelector('.cantidad-input').value = 1;
+
+            contenedor.appendChild(nuevaFila);
+            activarEventos();
+            calcularTotalVenta();
+        }
+
+        function eliminarFila(boton) {
+            const filas = document.querySelectorAll('.fila-producto');
+
+            if (filas.length === 1) {
+                alert('Debe quedar al menos un producto en la venta.');
+                return;
+            }
+
+            boton.closest('.fila-producto').remove();
+            calcularTotalVenta();
+        }
+
+        function activarEventos() {
+            document.querySelectorAll('.producto-select').forEach(function (select) {
+                select.onchange = calcularTotalVenta;
+            });
+
+            document.querySelectorAll('.cantidad-input').forEach(function (input) {
+                input.oninput = calcularTotalVenta;
+            });
+        }
+
+        activarEventos();
+        calcularTotalVenta();
+    </script>
 
 @endsection

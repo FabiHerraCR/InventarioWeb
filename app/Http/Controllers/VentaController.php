@@ -73,47 +73,77 @@ class VentaController extends Controller
     }
 
     public function store(Request $request)
-    {
-        $request->validate([
-            'id_cliente' => 'required',
-            'id_producto' => 'required',
-            'cantidad' => 'required|integer|min:1',
-        ]);
+{
+    $request->validate([
+        'id_cliente' => 'required',
+        'productos' => 'required|array|min:1',
+        'productos.*' => 'required',
+        'cantidades' => 'required|array|min:1',
+        'cantidades.*' => 'required|integer|min:1',
+    ], [
+        'id_cliente.required' => 'Debe seleccionar un cliente.',
+        'productos.required' => 'Debe agregar al menos un producto.',
+        'productos.*.required' => 'Debe seleccionar un producto.',
+        'cantidades.*.required' => 'Debe ingresar la cantidad.',
+        'cantidades.*.integer' => 'La cantidad debe ser un número entero.',
+        'cantidades.*.min' => 'La cantidad debe ser mayor a cero.',
+    ]);
 
-        $idUsuario = session('usuario.id_usuario');
+    $idUsuario = session('usuario.id_usuario');
 
-        try {
-            DB::transaction(function () use ($request, $idUsuario) {
+    try {
+        DB::transaction(function () use ($request, $idUsuario) {
+            DB::statement("
+                DECLARE
+                    V_ID_VENTA NUMBER;
+                BEGIN
+                    SP_INS_VENTA(?, ?, V_ID_VENTA);
+
+                    FOR i IN 1 .. ? LOOP
+                        NULL;
+                    END LOOP;
+                END;
+            ", [
+                $request->id_cliente,
+                $idUsuario,
+                count($request->productos),
+            ]);
+
+            $ultimaVenta = DB::selectOne("
+                SELECT MAX(ID_VENTA) AS ID_VENTA
+                FROM VENTAS
+                WHERE ID_CLIENTE = ?
+                AND ID_USUARIO = ?
+            ", [
+                $request->id_cliente,
+                $idUsuario,
+            ]);
+
+            foreach ($request->productos as $index => $idProducto) {
+                $cantidad = $request->cantidades[$index];
+
                 DB::statement("
-                    DECLARE
-                        V_ID_VENTA NUMBER;
                     BEGIN
-                        SP_INS_VENTA(?, ?, V_ID_VENTA);
-
-                        SP_INS_DETALLE_VENTA(
-                            V_ID_VENTA,
-                            ?,
-                            ?
-                        );
+                        SP_INS_DETALLE_VENTA(?, ?, ?);
                     END;
                 ", [
-                    $request->id_cliente,
-                    $idUsuario,
-                    $request->id_producto,
-                    $request->cantidad,
+                    $ultimaVenta->id_venta,
+                    $idProducto,
+                    $cantidad,
                 ]);
-            });
+            }
+        });
 
-            return redirect()
-                ->route('ventas.index')
-                ->with('success', 'Venta registrada correctamente.');
+        return redirect()
+            ->route('ventas.index')
+            ->with('success', 'Venta registrada correctamente.');
 
-        } catch (\Exception $e) {
-            return back()
-                ->with('error', 'No se pudo registrar la venta. Revise el stock disponible.')
-                ->withInput();
-        }
+    } catch (\Exception $e) {
+        return back()
+            ->with('error', 'No se pudo registrar la venta. Revise el stock disponible.')
+            ->withInput();
     }
+}
 
     public function destroy($id)
 {

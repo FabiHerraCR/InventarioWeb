@@ -24,7 +24,12 @@ class MovimientoController extends Controller
                     FECHA_MOVIMIENTO,
                     DESCRIPCION,
                     ID_COMPRA,
-                    ID_VENTA
+                    ID_VENTA,
+                    CASE
+                        WHEN ID_VENTA IS NOT NULL THEN 'Venta #' || ID_VENTA
+                        WHEN ID_COMPRA IS NOT NULL THEN 'Compra #' || ID_COMPRA
+                        ELSE 'Movimiento #' || ID_MOVIMIENTO
+                    END AS ORIGEN
                 FROM VW_MOVIMIENTOS_INVENTARIO
                 ORDER BY ID_MOVIMIENTO DESC
             ");
@@ -41,13 +46,22 @@ class MovimientoController extends Controller
                     FECHA_MOVIMIENTO,
                     DESCRIPCION,
                     ID_COMPRA,
-                    ID_VENTA
+                    ID_VENTA,
+                    CASE
+                        WHEN ID_VENTA IS NOT NULL THEN 'Venta #' || ID_VENTA
+                        WHEN ID_COMPRA IS NOT NULL THEN 'Compra #' || ID_COMPRA
+                        ELSE 'Movimiento #' || ID_MOVIMIENTO
+                    END AS ORIGEN
                 FROM VW_MOVIMIENTOS_INVENTARIO
                 WHERE ID_USUARIO = ?
                 ORDER BY ID_MOVIMIENTO DESC
             ", [$idUsuario]);
         }
 
-        return view('movimientos.index', compact('movimientos'));
+        $movimientosAgrupados = collect($movimientos)->groupBy(function ($movimiento) {
+            return $movimiento->origen;
+        });
+
+        return view('movimientos.index', compact('movimientosAgrupados'));
     }
 }

@@ -7,7 +7,7 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="bg-gray-100 text-gray-800">
+<body class="bg-gray-300 text-gray-800">
 
     <div class="min-h-screen flex">
 

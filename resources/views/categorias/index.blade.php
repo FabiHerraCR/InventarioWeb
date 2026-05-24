@@ -25,7 +25,7 @@
         </a>
     </div>
 
-    <div class="bg-white shadow rounded-xl overflow-hidden">
+    <div class="bg-white shadow-md border border-gray-200 rounded-xl overflow-hidden">
         <div class="overflow-x-auto">
             <table class="w-full border-collapse">
                 <thead class="bg-gray-900 text-white">

@@ -12,14 +12,15 @@
         </div>
     @endif
 
-    <div class="bg-white p-6 rounded-xl shadow max-w-3xl">
-        <form action="{{ route('compras.store') }}" method="POST">
+    <div class="bg-white p-6 rounded-xl shadow max-w-7xl">
+        <form action="{{ route('compras.store') }}" method="POST" novalidate>
             @csrf
 
-            <div class="mb-4">
+            <div class="mb-4 max-w-2xl">
                 <label class="block font-semibold mb-2">Proveedor</label>
-                <select name="id_proveedor" class="w-full border rounded-lg p-3" required>
+                <select id="id_proveedor" name="id_proveedor" class="w-full border rounded-lg p-3" required>
                     <option value="">Seleccione un proveedor</option>
+
                     @foreach ($proveedores as $proveedor)
                         <option value="{{ $proveedor->id_proveedor }}"
                             {{ old('id_proveedor') == $proveedor->id_proveedor ? 'selected' : '' }}>
@@ -33,70 +34,285 @@
                 @enderror
             </div>
 
-            <div class="mb-4">
-                <label class="block font-semibold mb-2">Producto</label>
-                <select name="id_producto" class="w-full border rounded-lg p-3" required>
-                    <option value="">Seleccione un producto</option>
-                    @foreach ($productos as $producto)
-                        <option value="{{ $producto->id_producto }}"
-                            {{ old('id_producto') == $producto->id_producto ? 'selected' : '' }}>
-                            {{ $producto->nombre_producto }}
-                            - Precio compra actual: ₡{{ number_format($producto->precio_compra, 2) }}
-                            - Stock: {{ $producto->stock }}
-                        </option>
-                    @endforeach
-                </select>
+<h3 class="text-lg font-bold mb-3">Productos de la compra</h3>
 
-                @error('id_producto')
-                    <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
-                @enderror
-            </div>
+<div id="detalleCompra">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 mb-3 fila-producto">
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <div class="lg:col-span-4">
+            <label class="block font-semibold mb-2">Producto</label>
+            <select name="productos[]"
+                    class="producto-select w-full border rounded-lg p-3"
+                    required>
+                <option value="" data-precio="0" data-proveedor="">
+                    Primero seleccione un proveedor
+                </option>
 
-                <div>
-                    <label class="block font-semibold mb-2">Cantidad</label>
-                    <input type="number"
-                           name="cantidad"
-                           value="{{ old('cantidad') }}"
-                           min="1"
-                           class="w-full border rounded-lg p-3"
-                           required>
+                @foreach ($productos as $producto)
+                    <option value="{{ $producto->id_producto }}"
+                            data-precio="{{ $producto->precio_compra }}"
+                            data-proveedor="{{ $producto->id_proveedor }}">
+                        {{ $producto->nombre_producto }} - Stock: {{ $producto->stock }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
 
-                    @error('cantidad')
-                        <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
+        <div class="lg:col-span-1">
+            <label class="block font-semibold mb-2">Cantidad</label>
+            <input type="number"
+                   name="cantidades[]"
+                   class="cantidad-input w-full border rounded-lg p-3"
+                   min="1"
+                   value="1"
+                   required>
+        </div>
 
-                <div>
-                    <label class="block font-semibold mb-2">Precio unitario</label>
-                    <input type="number"
-                           name="precio_unitario"
-                           value="{{ old('precio_unitario') }}"
-                           min="0"
-                           step="0.01"
-                           class="w-full border rounded-lg p-3"
-                           required>
+        <div class="lg:col-span-2">
+            <label class="block font-semibold mb-2">Precio unitario</label>
+            <input type="number"
+                   name="precios[]"
+                   class="precio-input w-full border rounded-lg p-3 bg-gray-100"
+                   min="0"
+                   step="0.01"
+                   value="0"
+                   readonly
+                   required>
+        </div>
 
-                    @error('precio_unitario')
-                        <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
+        <div class="lg:col-span-2">
+            <label class="block font-semibold mb-2">Total</label>
+            <input type="text"
+                   class="subtotal-input w-full border rounded-lg p-3 bg-gray-100"
+                   value="₡0.00"
+                   readonly>
+        </div>
 
-            </div>
+        <div class="lg:col-span-2 flex items-end">
+            <button type="button"
+                    onclick="eliminarFilaCompra(this)"
+                    class="bg-red-600 text-white px-6 py-3 rounded hover:bg-red-700">
+                Quitar
+            </button>
+        </div>
 
-            <div class="flex gap-2">
-                <button type="submit"
-                        class="bg-gray-900 text-white px-4 py-2 rounded hover:bg-gray-700">
-                    Registrar compra
-                </button>
+    </div>
+</div>
 
-                <a href="{{ route('compras.index') }}"
-                   class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400">
-                    Cancelar
-                </a>
-            </div>
+<div class="mb-4">
+    <button type="button"
+            onclick="agregarFilaCompra()"
+            class="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-800">
+        + Agregar producto
+    </button>
+</div>
+
+<div class="mb-6 bg-gray-100 p-4 rounded-lg">
+    <p class="font-semibold text-gray-700">Total estimado de la compra</p>
+    <p id="totalCompra" class="text-2xl font-bold text-gray-900">
+        ₡0.00
+    </p>
+</div>
+
+<div class="flex gap-2">
+    <button type="submit"
+            class="bg-gray-900 text-white px-4 py-2 rounded hover:bg-gray-700">
+        Registrar compra
+    </button>
+
+    <a href="{{ route('compras.index') }}"
+       class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400">
+        Cancelar
+    </a>
+</div>
         </form>
     </div>
+
+<script>
+    const proveedorSelect = document.getElementById('id_proveedor');
+
+    function formatoColones(valor) {
+        return '₡' + valor.toLocaleString('es-CR', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
+
+    function calcularSubtotalFila(fila) {
+        const cantidadInput = fila.querySelector('.cantidad-input');
+        const precioInput = fila.querySelector('.precio-input');
+        const subtotalInput = fila.querySelector('.subtotal-input');
+
+        const cantidad = parseInt(cantidadInput.value) || 0;
+        const precio = parseFloat(precioInput.value) || 0;
+
+        const subtotal = cantidad * precio;
+
+        subtotalInput.value = formatoColones(subtotal);
+
+        return subtotal;
+    }
+
+    function calcularTotalCompra() {
+        let total = 0;
+
+        document.querySelectorAll('.fila-producto').forEach(function (fila) {
+            total += calcularSubtotalFila(fila);
+        });
+
+        document.getElementById('totalCompra').textContent = formatoColones(total);
+    }
+
+    function actualizarPrecioDesdeProducto(select) {
+        const fila = select.closest('.fila-producto');
+        const precioInput = fila.querySelector('.precio-input');
+        const opcion = select.options[select.selectedIndex];
+        const precio = parseFloat(opcion.getAttribute('data-precio')) || 0;
+
+        precioInput.value = precio;
+        calcularTotalCompra();
+    }
+
+ function cargarProductosDelProveedor(limpiarSeleccion = false) {
+        const idProveedor = proveedorSelect.value;
+
+        document.querySelectorAll('.producto-select').forEach(function (select) {
+
+            Array.from(select.options).forEach(function (option) {
+                const proveedorProducto = option.getAttribute('data-proveedor');
+
+                if (option.value === '') {
+                    option.hidden = false;
+                    option.disabled = false;
+
+                    if (idProveedor === '') {
+                        option.textContent = 'Primero seleccione un proveedor';
+                    } else {
+                        option.textContent = 'Seleccione un producto';
+                    }
+
+                    return;
+                }
+
+                if (idProveedor !== '' && proveedorProducto === idProveedor) {
+                    option.hidden = false;
+                    option.disabled = false;
+                } else {
+                    option.hidden = true;
+                    option.disabled = true;
+                }
+            });
+
+            const opcionActual = select.options[select.selectedIndex];
+
+            if (limpiarSeleccion || !opcionActual || opcionActual.disabled) {
+                select.value = '';
+
+                const fila = select.closest('.fila-producto');
+                fila.querySelector('.precio-input').value = 0;
+                fila.querySelector('.subtotal-input').value = '₡0.00';
+            }
+        });
+
+        calcularTotalCompra();
+    } 
+    
+
+    function cargarProductosDelProveedor(limpiarSeleccion = false) {
+        const idProveedor = proveedorSelect.value;
+
+        document.querySelectorAll('.producto-select').forEach(function (select) {
+
+            Array.from(select.options).forEach(function (option) {
+                const proveedorProducto = option.getAttribute('data-proveedor');
+
+                if (option.value === '') {
+                    option.hidden = false;
+                    option.disabled = false;
+
+                    if (idProveedor === '') {
+                        option.textContent = 'Primero seleccione un proveedor';
+                    } else {
+                        option.textContent = 'Seleccione un producto';
+                    }
+
+                    return;
+                }
+
+                if (idProveedor !== '' && proveedorProducto === idProveedor) {
+                    option.hidden = false;
+                    option.disabled = false;
+                } else {
+                    option.hidden = true;
+                    option.disabled = true;
+                }
+            });
+
+            const opcionActual = select.options[select.selectedIndex];
+
+            if (limpiarSeleccion || !opcionActual || opcionActual.disabled) {
+                select.value = '';
+
+                const fila = select.closest('.fila-producto');
+                fila.querySelector('.precio-input').value = 0;
+                fila.querySelector('.subtotal-input').value = '₡0.00';
+            }
+        });
+
+        calcularTotalCompra();
+    }
+
+    function agregarFilaCompra() {
+        const contenedor = document.getElementById('detalleCompra');
+        const primeraFila = document.querySelector('.fila-producto');
+        const nuevaFila = primeraFila.cloneNode(true);
+
+        nuevaFila.querySelector('.producto-select').value = '';
+        nuevaFila.querySelector('.cantidad-input').value = 1;
+        nuevaFila.querySelector('.precio-input').value = 0;
+        nuevaFila.querySelector('.subtotal-input').value = '₡0.00';
+
+        contenedor.appendChild(nuevaFila);
+        activarEventosCompra();
+        cargarProductosDelProveedor(false);
+        calcularTotalCompra();
+    }
+
+    function eliminarFilaCompra(boton) {
+        const filas = document.querySelectorAll('.fila-producto');
+
+        if (filas.length === 1) {
+            alert('Debe quedar al menos un producto en la compra.');
+            return;
+        }
+
+        boton.closest('.fila-producto').remove();
+        calcularTotalCompra();
+    }
+
+    function activarEventosCompra() {
+        document.querySelectorAll('.producto-select').forEach(function (select) {
+            select.onchange = function () {
+                actualizarPrecioDesdeProducto(this);
+            };
+        });
+
+        document.querySelectorAll('.cantidad-input').forEach(function (input) {
+            input.oninput = calcularTotalCompra;
+        });
+
+        document.querySelectorAll('.precio-input').forEach(function (input) {
+            input.oninput = calcularTotalCompra;
+        });
+    }
+
+    proveedorSelect.addEventListener('change', function () {
+    cargarProductosDelProveedor(true);
+});
+
+    activarEventosCompra();
+    cargarProductosDelProveedor(false);
+    calcularTotalCompra();
+</script>
 
 @endsection

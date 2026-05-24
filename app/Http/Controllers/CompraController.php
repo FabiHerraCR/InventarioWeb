@@ -22,10 +22,12 @@ class CompraController extends Controller
                 TOTAL,
                 ESTADO
             FROM VW_COMPRAS_DETALLE
-            ORDER BY ID_COMPRA
+            ORDER BY ID_COMPRA DESC
         ");
 
-        return view('compras.index', compact('compras'));
+        $comprasAgrupadas = collect($compras)->groupBy('id_compra');
+
+        return view('compras.index', compact('comprasAgrupadas'));
     }
 
     public function create()
@@ -38,60 +40,105 @@ class CompraController extends Controller
         ");
 
         $productos = DB::select("
-            SELECT ID_PRODUCTO, NOMBRE_PRODUCTO, PRECIO_COMPRA, STOCK
-            FROM PRODUCTOS
-            WHERE ESTADO = 'A'
-            ORDER BY NOMBRE_PRODUCTO
-        ");
+           SELECT
+           ID_PRODUCTO,
+           ID_PROVEEDOR,
+           NOMBRE_PRODUCTO,
+           PRECIO_COMPRA,
+           STOCK
+           FROM PRODUCTOS
+           WHERE ESTADO = 'A'
+           ORDER BY NOMBRE_PRODUCTO
+");
 
         return view('compras.create', compact('proveedores', 'productos'));
     }
 
-    public function store(Request $request)
-    {
-        $request->validate([
-            'id_proveedor' => 'required',
-            'id_producto' => 'required',
-            'cantidad' => 'required|integer|min:1',
-            'precio_unitario' => 'required|numeric|min:0',
-        ]);
+public function store(Request $request)
+{
+    $request->validate([
+        'id_proveedor' => 'required',
+        'productos' => 'required|array|min:1',
+        'productos.*' => 'required',
+        'cantidades' => 'required|array|min:1',
+        'cantidades.*' => 'required|integer|min:1',
+    ], [
+        'id_proveedor.required' => 'Debe seleccionar un proveedor.',
+        'productos.required' => 'Debe agregar al menos un producto.',
+        'productos.*.required' => 'Debe seleccionar un producto.',
+        'cantidades.*.required' => 'Debe ingresar la cantidad.',
+        'cantidades.*.integer' => 'La cantidad debe ser un número entero.',
+        'cantidades.*.min' => 'La cantidad debe ser mayor a cero.',
+    ]);
 
-        $idUsuario = session('usuario.id_usuario');
+    $idUsuario = session('usuario.id_usuario');
 
-        try {
-            DB::transaction(function () use ($request, $idUsuario) {
+    try {
+        DB::transaction(function () use ($request, $idUsuario) {
+
+            DB::statement("
+                DECLARE
+                    V_ID_COMPRA NUMBER;
+                BEGIN
+                    SP_INS_COMPRA(?, ?, V_ID_COMPRA);
+                END;
+            ", [
+                $request->id_proveedor,
+                $idUsuario,
+            ]);
+
+            $ultimaCompra = DB::selectOne("
+                SELECT MAX(ID_COMPRA) AS ID_COMPRA
+                FROM COMPRAS
+                WHERE ID_PROVEEDOR = ?
+                AND ID_USUARIO = ?
+            ", [
+                $request->id_proveedor,
+                $idUsuario,
+            ]);
+
+            foreach ($request->productos as $index => $idProducto) {
+
+                $producto = DB::selectOne("
+                    SELECT
+                        ID_PRODUCTO,
+                        PRECIO_COMPRA
+                    FROM PRODUCTOS
+                    WHERE ID_PRODUCTO = ?
+                    AND ID_PROVEEDOR = ?
+                    AND ESTADO = 'A'
+                ", [
+                    $idProducto,
+                    $request->id_proveedor,
+                ]);
+
+                if (!$producto) {
+                    throw new \Exception('El producto no pertenece al proveedor seleccionado.');
+                }
+
                 DB::statement("
-                    DECLARE
-                        V_ID_COMPRA NUMBER;
                     BEGIN
-                        SP_INS_COMPRA(?, ?, V_ID_COMPRA);
-
-                        SP_INS_DETALLE_COMPRA(
-                            V_ID_COMPRA,
-                            ?,
-                            ?,
-                            ?
-                        );
+                        SP_INS_DETALLE_COMPRA(?, ?, ?, ?);
                     END;
                 ", [
-                    $request->id_proveedor,
-                    $idUsuario,
-                    $request->id_producto,
-                    $request->cantidad,
-                    $request->precio_unitario,
+                    $ultimaCompra->id_compra,
+                    $idProducto,
+                    $request->cantidades[$index],
+                    $producto->precio_compra,
                 ]);
-            });
+            }
+        });
 
-            return redirect()
-                ->route('compras.index')
-                ->with('success', 'Compra registrada correctamente.');
+        return redirect()
+            ->route('compras.index')
+            ->with('success', 'Compra registrada correctamente.');
 
-        } catch (\Exception $e) {
-            return back()
-                ->with('error', 'No se pudo registrar la compra. Revise los datos ingresados.')
-                ->withInput();
-        }
+    } catch (\Exception $e) {
+        return back()
+            ->with('error', 'No se pudo registrar la compra. Verifique que los productos pertenezcan al proveedor seleccionado.')
+            ->withInput();
     }
+}
 
     public function destroy($id)
     {
