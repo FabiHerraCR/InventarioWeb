@@ -120,7 +120,7 @@
                 </thead>
 
                 <tbody>
-                    @foreach ($ventasPorDia as $venta)
+                    @foreach (collect($ventasPorDia)->sortByDesc('fecha') as $venta)
                         <tr class="border-b hover:bg-gray-50">
                             <td class="p-3">{{ $venta->fecha }}</td>
                             <td class="p-3 text-center">{{ $venta->cantidad_ventas }}</td>

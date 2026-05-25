@@ -173,10 +173,15 @@
         calcularTotalCompra();
     }
 
- function cargarProductosDelProveedor(limpiarSeleccion = false) {
+    function actualizarProductosDisponibles(limpiarSeleccion = false) {
         const idProveedor = proveedorSelect.value;
 
+        const productosSeleccionados = Array.from(document.querySelectorAll('.producto-select'))
+            .map(select => select.value)
+            .filter(value => value !== '');
+
         document.querySelectorAll('.producto-select').forEach(function (select) {
+            const valorActual = select.value;
 
             Array.from(select.options).forEach(function (option) {
                 const proveedorProducto = option.getAttribute('data-proveedor');
@@ -194,7 +199,11 @@
                     return;
                 }
 
-                if (idProveedor !== '' && proveedorProducto === idProveedor) {
+                const perteneceAlProveedor = idProveedor !== '' && proveedorProducto === idProveedor;
+                const yaSeleccionadoEnOtraFila =
+                    productosSeleccionados.includes(option.value) && option.value !== valorActual;
+
+                if (perteneceAlProveedor && !yaSeleccionadoEnOtraFila) {
                     option.hidden = false;
                     option.disabled = false;
                 } else {
@@ -205,52 +214,7 @@
 
             const opcionActual = select.options[select.selectedIndex];
 
-            if (limpiarSeleccion || !opcionActual || opcionActual.disabled) {
-                select.value = '';
-
-                const fila = select.closest('.fila-producto');
-                fila.querySelector('.precio-input').value = 0;
-                fila.querySelector('.subtotal-input').value = '₡0.00';
-            }
-        });
-
-        calcularTotalCompra();
-    } 
-    
-
-    function cargarProductosDelProveedor(limpiarSeleccion = false) {
-        const idProveedor = proveedorSelect.value;
-
-        document.querySelectorAll('.producto-select').forEach(function (select) {
-
-            Array.from(select.options).forEach(function (option) {
-                const proveedorProducto = option.getAttribute('data-proveedor');
-
-                if (option.value === '') {
-                    option.hidden = false;
-                    option.disabled = false;
-
-                    if (idProveedor === '') {
-                        option.textContent = 'Primero seleccione un proveedor';
-                    } else {
-                        option.textContent = 'Seleccione un producto';
-                    }
-
-                    return;
-                }
-
-                if (idProveedor !== '' && proveedorProducto === idProveedor) {
-                    option.hidden = false;
-                    option.disabled = false;
-                } else {
-                    option.hidden = true;
-                    option.disabled = true;
-                }
-            });
-
-            const opcionActual = select.options[select.selectedIndex];
-
-            if (limpiarSeleccion || !opcionActual || opcionActual.disabled) {
+            if (limpiarSeleccion || !opcionActual || opcionActual.disabled || opcionActual.hidden) {
                 select.value = '';
 
                 const fila = select.closest('.fila-producto');
@@ -273,8 +237,9 @@
         nuevaFila.querySelector('.subtotal-input').value = '₡0.00';
 
         contenedor.appendChild(nuevaFila);
+
         activarEventosCompra();
-        cargarProductosDelProveedor(false);
+        actualizarProductosDisponibles(false);
         calcularTotalCompra();
     }
 
@@ -287,6 +252,8 @@
         }
 
         boton.closest('.fila-producto').remove();
+
+        actualizarProductosDisponibles(false);
         calcularTotalCompra();
     }
 
@@ -294,6 +261,8 @@
         document.querySelectorAll('.producto-select').forEach(function (select) {
             select.onchange = function () {
                 actualizarPrecioDesdeProducto(this);
+                actualizarProductosDisponibles(false);
+                calcularTotalCompra();
             };
         });
 
@@ -307,11 +276,11 @@
     }
 
     proveedorSelect.addEventListener('change', function () {
-    cargarProductosDelProveedor(true);
-});
+        actualizarProductosDisponibles(true);
+    });
 
     activarEventosCompra();
-    cargarProductosDelProveedor(false);
+    actualizarProductosDisponibles(false);
     calcularTotalCompra();
 </script>
 

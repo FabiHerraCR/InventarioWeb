@@ -117,67 +117,98 @@
     </div>
 
     <script>
-        function formatoColones(valor) {
-            return '₡' + valor.toLocaleString('es-CR', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
+    function formatoColones(valor) {
+        return '₡' + valor.toLocaleString('es-CR', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
+
+    function calcularTotalVenta() {
+        let total = 0;
+
+        document.querySelectorAll('.fila-producto').forEach(function (fila) {
+            const productoSelect = fila.querySelector('.producto-select');
+            const cantidadInput = fila.querySelector('.cantidad-input');
+
+            const opcion = productoSelect.options[productoSelect.selectedIndex];
+            const precio = parseFloat(opcion.getAttribute('data-precio')) || 0;
+            const cantidad = parseInt(cantidadInput.value) || 0;
+
+            total += precio * cantidad;
+        });
+
+        document.getElementById('totalVenta').textContent = formatoColones(total);
+    }
+
+    function actualizarProductosSeleccionados() {
+        const productosSeleccionados = Array.from(document.querySelectorAll('.producto-select'))
+            .map(select => select.value)
+            .filter(value => value !== '');
+
+        document.querySelectorAll('.producto-select').forEach(function (select) {
+            const valorActual = select.value;
+
+            Array.from(select.options).forEach(function (option) {
+                if (option.value === '') {
+                    option.disabled = false;
+                    return;
+                }
+
+                if (productosSeleccionados.includes(option.value) && option.value !== valorActual) {
+                    option.disabled = true;
+                } else {
+                    option.disabled = false;
+                }
             });
-        }
+        });
+    }
 
-        function calcularTotalVenta() {
-            let total = 0;
+    function agregarFila() {
+        const contenedor = document.getElementById('detalleVenta');
+        const primeraFila = document.querySelector('.fila-producto');
+        const nuevaFila = primeraFila.cloneNode(true);
 
-            document.querySelectorAll('.fila-producto').forEach(function (fila) {
-                const productoSelect = fila.querySelector('.producto-select');
-                const cantidadInput = fila.querySelector('.cantidad-input');
+        nuevaFila.querySelector('.producto-select').value = '';
+        nuevaFila.querySelector('.cantidad-input').value = 1;
 
-                const opcion = productoSelect.options[productoSelect.selectedIndex];
-                const precio = parseFloat(opcion.getAttribute('data-precio')) || 0;
-                const cantidad = parseInt(cantidadInput.value) || 0;
-
-                total += precio * cantidad;
-            });
-
-            document.getElementById('totalVenta').textContent = formatoColones(total);
-        }
-
-        function agregarFila() {
-            const contenedor = document.getElementById('detalleVenta');
-            const primeraFila = document.querySelector('.fila-producto');
-            const nuevaFila = primeraFila.cloneNode(true);
-
-            nuevaFila.querySelector('.producto-select').value = '';
-            nuevaFila.querySelector('.cantidad-input').value = 1;
-
-            contenedor.appendChild(nuevaFila);
-            activarEventos();
-            calcularTotalVenta();
-        }
-
-        function eliminarFila(boton) {
-            const filas = document.querySelectorAll('.fila-producto');
-
-            if (filas.length === 1) {
-                alert('Debe quedar al menos un producto en la venta.');
-                return;
-            }
-
-            boton.closest('.fila-producto').remove();
-            calcularTotalVenta();
-        }
-
-        function activarEventos() {
-            document.querySelectorAll('.producto-select').forEach(function (select) {
-                select.onchange = calcularTotalVenta;
-            });
-
-            document.querySelectorAll('.cantidad-input').forEach(function (input) {
-                input.oninput = calcularTotalVenta;
-            });
-        }
+        contenedor.appendChild(nuevaFila);
 
         activarEventos();
+        actualizarProductosSeleccionados();
         calcularTotalVenta();
-    </script>
+    }
+
+    function eliminarFila(boton) {
+        const filas = document.querySelectorAll('.fila-producto');
+
+        if (filas.length === 1) {
+            alert('Debe quedar al menos un producto en la venta.');
+            return;
+        }
+
+        boton.closest('.fila-producto').remove();
+
+        actualizarProductosSeleccionados();
+        calcularTotalVenta();
+    }
+
+    function activarEventos() {
+        document.querySelectorAll('.producto-select').forEach(function (select) {
+            select.onchange = function () {
+                calcularTotalVenta();
+                actualizarProductosSeleccionados();
+            };
+        });
+
+        document.querySelectorAll('.cantidad-input').forEach(function (input) {
+            input.oninput = calcularTotalVenta;
+        });
+    }
+
+    activarEventos();
+    actualizarProductosSeleccionados();
+    calcularTotalVenta();
+</script>
 
 @endsection

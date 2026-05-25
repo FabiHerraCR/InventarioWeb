@@ -46,21 +46,11 @@ class AuthController extends Controller
 
 $passwordGuardada = $usuario->password;
 
-if (
-    str_starts_with($passwordGuardada, '$2y$') ||
-    str_starts_with($passwordGuardada, '$2a$') ||
-    str_starts_with($passwordGuardada, '$2b$')
-) {
-    $passwordCorrecta = Hash::check($request->password, $passwordGuardada);
-} else {
-    $passwordCorrecta = $request->password === $passwordGuardada;
+if (!Hash::check($request->password, $passwordGuardada)) {
+    return back()
+        ->with('error', 'Correo o contraseña incorrectos.')
+        ->withInput();
 }
-
-        if (!$passwordCorrecta) {
-            return back()
-                ->with('error', 'Correo o contraseña incorrectos.')
-                ->withInput();
-        }
 
         session([
             'usuario' => [
