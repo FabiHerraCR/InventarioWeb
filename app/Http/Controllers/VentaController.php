@@ -52,25 +52,37 @@ class VentaController extends Controller
     return view('ventas.index', compact('ventasAgrupadas'));
 }
 
-    public function create()
-    {
-        $clientes = DB::select("
-            SELECT ID_CLIENTE, NOMBRE_CLIENTE
-            FROM CLIENTES
-            WHERE ESTADO = 'A'
-            ORDER BY NOMBRE_CLIENTE
-        ");
+public function create()
+{
+    $clientes = DB::select("
+        SELECT ID_CLIENTE, NOMBRE_CLIENTE
+        FROM CLIENTES
+        WHERE ESTADO = 'A'
+        ORDER BY NOMBRE_CLIENTE
+    ");
 
-        $productos = DB::select("
-            SELECT ID_PRODUCTO, NOMBRE_PRODUCTO, PRECIO_VENTA, STOCK
-            FROM PRODUCTOS
-            WHERE ESTADO = 'A'
-            AND STOCK > 0
-            ORDER BY NOMBRE_PRODUCTO
-        ");
+    $categorias = DB::select("
+        SELECT ID_CATEGORIA, NOMBRE_CATEGORIA
+        FROM CATEGORIAS
+        WHERE ESTADO = 'A'
+        ORDER BY NOMBRE_CATEGORIA
+    ");
 
-        return view('ventas.create', compact('clientes', 'productos'));
-    }
+    $productos = DB::select("
+        SELECT
+            ID_PRODUCTO,
+            ID_CATEGORIA,
+            NOMBRE_PRODUCTO,
+            PRECIO_VENTA,
+            STOCK
+        FROM PRODUCTOS
+        WHERE ESTADO = 'A'
+        AND STOCK > 0
+        ORDER BY NOMBRE_PRODUCTO
+    ");
+
+    return view('ventas.create', compact('clientes', 'categorias', 'productos'));
+}
 
     public function store(Request $request)
 {
