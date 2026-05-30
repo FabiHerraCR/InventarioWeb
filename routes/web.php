@@ -13,7 +13,7 @@ use App\Http\Controllers\ReporteController;
 use App\Http\Controllers\MovimientoController;
 use App\Http\Controllers\CategoriaController;
 
-// RUTAS DE AUTENTICACION
+//RUTAS DE AUTENTICACION
 
 Route::get('/login', [AuthController::class, 'showLogin'])
     ->name('login');
@@ -25,7 +25,7 @@ Route::post('/logout', [AuthController::class, 'logout'])
     ->name('logout');
 
 
-// RUTAS PROTEGIDAS CON SESION
+//RUTAS PROTEGIDAS CON SESION
 
 Route::middleware('sesion')->group(function () {
 
@@ -33,25 +33,31 @@ Route::middleware('sesion')->group(function () {
         return view('dashboard');
     })->name('dashboard');
 
-    // Opcional: si alguien escribe /inicio, lo manda al panel
+    //Opcional: si alguien escribe /inicio, lo manda al panel
     Route::get('/inicio', function () {
         return redirect()->route('dashboard');
     })->name('inicio');
 
 
-    // RUTAS PARA ADMINISTRADOR Y VENDEDOR
+    //RUTAS PARA ADMINISTRADOR Y VENDEDOR
 
     Route::middleware('rol:ADMINISTRADOR,VENDEDOR')->group(function () {
 
-        // Inventario solo consulta para ambos roles
+        //Inventario solo consulta para ambos roles
         Route::get('/inventario', [InventarioController::class, 'index'])
             ->name('inventario.index');
 
-        // Clientes solo listado para ambos roles
+        //Clientes solo listado para ambos roles
         Route::get('/clientes', [ClienteController::class, 'index'])
             ->name('clientes.index');
 
-        // Ventas
+        Route::get('/clientes/crear', [ClienteController::class, 'create'])
+            ->name('clientes.create');
+
+        Route::post('/clientes/guardar', [ClienteController::class, 'store'])
+            ->name('clientes.store');
+
+        //Ventas
         Route::get('/ventas', [VentaController::class, 'index'])
             ->name('ventas.index');
 
@@ -64,27 +70,22 @@ Route::middleware('sesion')->group(function () {
         Route::delete('/ventas/{id}/anular', [VentaController::class, 'destroy'])
             ->name('ventas.destroy');
 
-        // Movimientos
+        //Movimientos
         Route::get('/movimientos', [MovimientoController::class, 'index'])
             ->name('movimientos.index');
 
-        // Reportes
+        //Reportes
         Route::get('/reportes', [ReporteController::class, 'index'])
             ->name('reportes.index');
     });
 
 
-    // RUTAS SOLO PARA ADMINISTRADOR
+    //RUTAS SOLO PARA ADMINISTRADOR
 
     Route::middleware('rol:ADMINISTRADOR')->group(function () {
 
-        // CRUD DE CLIENTES - SOLO ADMINISTRADOR
+        //CRUD DE CLIENTES - SOLO ADMINISTRADOR
 
-        Route::get('/clientes/crear', [ClienteController::class, 'create'])
-            ->name('clientes.create');
-
-        Route::post('/clientes/guardar', [ClienteController::class, 'store'])
-            ->name('clientes.store');
 
         Route::get('/clientes/{id}/editar', [ClienteController::class, 'edit'])
             ->name('clientes.edit');
@@ -96,7 +97,7 @@ Route::middleware('sesion')->group(function () {
             ->name('clientes.destroy');
 
 
-        // CRUD DE INVENTARIO - SOLO ADMINISTRADOR
+        //CRUD DE INVENTARIO - SOLO ADMINISTRADOR
 
         Route::get('/inventario/crear', [InventarioController::class, 'create'])
             ->name('inventario.create');
@@ -114,7 +115,7 @@ Route::middleware('sesion')->group(function () {
             ->name('inventario.destroy');
 
 
-        // COMPRAS - SOLO ADMINISTRADOR
+        //COMPRAS - SOLO ADMINISTRADOR
 
         Route::get('/compras', [CompraController::class, 'index'])
             ->name('compras.index');
@@ -129,7 +130,7 @@ Route::middleware('sesion')->group(function () {
             ->name('compras.destroy');
 
 
-        // PROVEEDORES - SOLO ADMINISTRADOR
+        //PROVEEDORES - SOLO ADMINISTRADOR
 
         Route::get('/proveedores', [ProveedorController::class, 'index'])
             ->name('proveedores.index');
@@ -150,7 +151,7 @@ Route::middleware('sesion')->group(function () {
             ->name('proveedores.destroy');
 
 
-        // CATEGORIAS - SOLO ADMINISTRADOR
+        //CATEGORIAS - SOLO ADMINISTRADOR
 
         Route::get('/categorias', [CategoriaController::class, 'index'])
             ->name('categorias.index');
@@ -171,7 +172,7 @@ Route::middleware('sesion')->group(function () {
             ->name('categorias.destroy');
 
 
-        // RUTAS TEMPORALES DE PRUEBA ORACLE - SOLO ADMINISTRADOR
+        //RUTAS TEMPORALES DE PRUEBA ORACLE - SOLO ADMINISTRADOR
 
         Route::get('/probar-oracle', function () {
             $usuario = DB::select('SELECT USER FROM DUAL');
@@ -191,7 +192,7 @@ Route::middleware('sesion')->group(function () {
     });
 });
 
-// RUTAS TEMPORALES DE PRUEBA ORACLE
+//RUTAS TEMPORALES DE PRUEBA ORACLE
 
 Route::get('/probar-oracle', function () {
     $usuario = DB::select('SELECT USER FROM DUAL');

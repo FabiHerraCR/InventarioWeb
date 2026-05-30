@@ -16,7 +16,7 @@
         </div>
     @endif
 
-    @if ($rol === 'ADMINISTRADOR')
+    @if (in_array($rol, ['ADMINISTRADOR', 'VENDEDOR']))
         <div class="mb-4">
             <a href="{{ route('clientes.create') }}"
                class="inline-block bg-gray-900 text-white px-4 py-2 rounded hover:bg-gray-700">
